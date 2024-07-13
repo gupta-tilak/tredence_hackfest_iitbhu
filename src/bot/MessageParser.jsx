@@ -1,13 +1,24 @@
+// src/bot/MessageParser.jsx
+
 class MessageParser {
-  constructor(actionProvider) {
+  constructor(actionProvider, state) {
     this.actionProvider = actionProvider;
+    this.state = state;
   }
 
   parse(message) {
-    const lowerCaseMessage = message.toLowerCase();
+    if (this.state.expectingPolicyNumber) {
+      this.actionProvider.handlePolicyNumber(message);
+    } else {
+      const lowerCaseMessage = message.toLowerCase();
 
-    if (lowerCaseMessage.includes("upload")) {
-      this.actionProvider.handleUpload();
+      if (lowerCaseMessage.includes("upload image")) {
+        this.actionProvider.handleUpload();
+      } else if (lowerCaseMessage.includes("open claim")) {
+        this.actionProvider.handleOpenClaim();
+      } else {
+        this.actionProvider.handleOptions();
+      }
     }
   }
 }

@@ -1,5 +1,8 @@
 // ActionProvider.jsx
 
+import { doc, getDoc } from "firebase/firestore";
+import { db } from '../firebaseConfig';
+
 class ActionProvider {
   constructor(createChatBotMessage, setStateFunc, createClientMessage) {
     this.createChatBotMessage = createChatBotMessage;
@@ -43,6 +46,56 @@ class ActionProvider {
       messages: [...prevState.messages, ...messages],
     }));
   }
+
+  handleOptions = (options) => {
+    const message = this.createChatBotMessage(
+      "How can I help you? Below are some possible options.",
+      {
+        widget: "overview",
+        loading: true,
+        terminateLoading: true,
+        ...options
+      }
+    );
+
+    this.addMessageToState(message);
+  };
+
+  handleOpenClaim = () => {
+    const message = this.createChatBotMessage(
+      "Please enter your Policy Number:"
+    );
+
+    this.setState((prevState) => ({
+      ...prevState,
+      messages: [...prevState.messages, message],
+      expectingPolicyNumber: true,  // Set flag to indicate policy number is expected
+    }));
+  };
+
+  handlePolicyNumber = async (policyNumber) => {
+    let message;
+
+    try {
+      const docRef = doc(db, "policies", policyNumber);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const policyData = docSnap.data();
+        message = this.createChatBotMessage(`Policy found: ${JSON.stringify(policyData)}`);
+      } else {
+        message = this.createChatBotMessage("Policy not found. Please try again.");
+      }
+    } catch (error) {
+      message = this.createChatBotMessage(`Error: ${error.message}`);
+    }
+
+    this.setState((prevState) => ({
+      ...prevState,
+      messages: [...prevState.messages, message],
+      expectingPolicyNumber: false,  // Reset flag
+    }));
+  };
 }
 
 export default ActionProvider;

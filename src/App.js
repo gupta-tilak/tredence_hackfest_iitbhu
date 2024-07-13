@@ -1,4 +1,5 @@
 import './App.css';
+import './bot/widgets/styles/Options.css'
 import Chatbot from 'react-chatbot-kit'
 // import 'react-chatbot-kit/build/main.css'
 import config from '../src/bot/config.js';
