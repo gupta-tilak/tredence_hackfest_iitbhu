@@ -2,10 +2,10 @@
 
 import React from 'react';
 
-const ImageWidget = ({ payload }) => {
-  const { predicted_image } = payload;
+const DamageWidget = ({ payload }) => {
+  const { img1 } = payload;
 
-  if (!predicted_image) {
+  if (!img1) {
     console.log("empty")
     return null; // Handle case where predicted_image is not available
   }
@@ -13,7 +13,7 @@ const ImageWidget = ({ payload }) => {
   return (
     <div>
       <img
-        src={predicted_image}
+        src={img1}
         alt="Predicted"
         style={{ width: '100%', maxWidth: '400px' }} // Example dimensions
       />
@@ -21,4 +21,4 @@ const ImageWidget = ({ payload }) => {
   );
 };
 
-export default ImageWidget;
+export default DamageWidget;

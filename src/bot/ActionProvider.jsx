@@ -40,9 +40,13 @@ class ActionProvider {
     if (plate_texts && plate_texts.length > 0) {
       messages.push(this.createChatBotMessage(`Detected Plate Texts: ${plate_texts.join(', ')}`));
 
-      if (plate_texts===policyData.regNum) {
-        this.addMessageToState(messages);
+      if (plate_texts.includes(policyData.regNum)) {
+        
         messages.push(this.createChatBotMessage("Genuine User validated. Claim can be processed."));
+        messages.push(this.createChatBotMessage("Please Upload Image of your Damaged Car",{
+          widget: "damageUpload",
+        }))
+        this.addMessageToState(messages);
       } else {
         messages.push(this.createChatBotMessage("Fraud detected."));
         this.addMessageToState(messages);
@@ -52,6 +56,30 @@ class ActionProvider {
     }
   };
 
+  handleDamageResponse = (data) => {
+    const { img1, img2, img3, parts_list_damages } = data;
+    console.log(img1)
+  
+    // Prepare messages
+    const messages = [];
+  
+    // Display images
+    // messages.push(this.createChatBotMessage("Damage Assessment Results:"));
+    messages.push(this.createChatBotMessage("Image 1:", {
+      widget: "damageImage",
+      payload: {img1},
+    }));
+  
+    // Display parts list damages
+    parts_list_damages.forEach((damage, index) => {
+      messages.push(this.createChatBotMessage(`Damage ${index + 1}: ${damage}`));
+    });
+  
+    // Add messages to state
+    this.addMessageToState(messages);
+  };
+  
+  
   handleOptions = () => {
     const message = this.createChatBotMessage(
       "How can I help you? Below are some possible options.",
