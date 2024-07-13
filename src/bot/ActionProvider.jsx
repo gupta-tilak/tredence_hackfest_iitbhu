@@ -15,10 +15,7 @@ class ActionProvider {
       widget: "imageUpload",
     });
 
-    this.setState((prevState) => ({
-      ...prevState,
-      messages: [...prevState.messages, message],
-    }));
+    this.addMessageToState(message);
   }
 
   handleImageResponse(data) {
@@ -27,34 +24,26 @@ class ActionProvider {
     const messages = [];
 
     if (predicted_image) {
-      console.log("Image prop:", predicted_image); 
-      // Assuming predicted_image is a URL or base64 encoded image data
       messages.push(this.createChatBotMessage("Predicted Image:", {
-        widget: "image",  // Assuming you have a widget to display images
+        widget: "image",
         image: predicted_image,
       }));
     }
 
     if (plate_texts && plate_texts.length > 0) {
-      // Show plate texts
-      console.log(plate_texts)
       messages.push(this.createChatBotMessage(`Detected Plate Texts: ${plate_texts.join(', ')}`));
     }
 
-    this.setState((prevState) => ({
-      ...prevState,
-      messages: [...prevState.messages, ...messages],
-    }));
+    this.addMessageToState(messages);
   }
 
-  handleOptions = (options) => {
+  handleOptions = () => {
     const message = this.createChatBotMessage(
       "How can I help you? Below are some possible options.",
       {
         widget: "overview",
         loading: true,
         terminateLoading: true,
-        ...options
       }
     );
 
@@ -69,7 +58,7 @@ class ActionProvider {
     this.setState((prevState) => ({
       ...prevState,
       messages: [...prevState.messages, message],
-      expectingPolicyNumber: true,  // Set flag to indicate policy number is expected
+      expectingPolicyNumber: true,
     }));
   };
 
@@ -85,15 +74,25 @@ class ActionProvider {
         message = this.createChatBotMessage(`Policy found: ${JSON.stringify(policyData)}`);
       } else {
         message = this.createChatBotMessage("Policy not found. Please try again.");
+        this.addMessageToState(message); // Add "Policy not found" message to state
+        this.handleOptions(); // Show back the overview panel
+        return;
       }
     } catch (error) {
       message = this.createChatBotMessage(`Error: ${error.message}`);
     }
 
+    this.addMessageToState(message); // Add the message to state regardless of outcome
     this.setState((prevState) => ({
       ...prevState,
-      messages: [...prevState.messages, message],
-      expectingPolicyNumber: false,  // Reset flag
+      expectingPolicyNumber: false,
+    }));
+  };
+
+  addMessageToState = (message) => {
+    this.setState((prevState) => ({
+      ...prevState,
+      messages: Array.isArray(message) ? [...prevState.messages, ...message] : [...prevState.messages, message],
     }));
   };
 }
