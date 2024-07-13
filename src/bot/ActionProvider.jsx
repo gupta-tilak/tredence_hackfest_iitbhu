@@ -10,32 +10,47 @@ class ActionProvider {
     this.createClientMessage = createClientMessage;
   }
 
-  handleUpload() {
+  handleUpload = () => {
     const message = this.createChatBotMessage("Please upload your image:", {
       widget: "imageUpload",
     });
-
     this.addMessageToState(message);
-  }
+  };
 
-  handleImageResponse(data) {
+  handleImageResponse = (data) => {
     const { predicted_image, plate_texts } = data;
-
     const messages = [];
+
+    const policyData = JSON.parse(localStorage.getItem('policyData'));
+
+    if (!policyData) {
+      messages.push(this.createChatBotMessage("Policy data not found. Please enter the policy number again."));
+      this.addMessageToState(messages);
+      this.handleOptions();
+      return;
+    }
 
     if (predicted_image) {
       messages.push(this.createChatBotMessage("Predicted Image:", {
         widget: "image",
-        payload: {predicted_image},
+        payload: { predicted_image },
       }));
     }
 
     if (plate_texts && plate_texts.length > 0) {
       messages.push(this.createChatBotMessage(`Detected Plate Texts: ${plate_texts.join(', ')}`));
-    }
 
-    this.addMessageToState(messages);
-  }
+      if (plate_texts===policyData.regNum) {
+        this.addMessageToState(messages);
+        messages.push(this.createChatBotMessage("Genuine User validated. Claim can be processed."));
+      } else {
+        messages.push(this.createChatBotMessage("Fraud detected."));
+        this.addMessageToState(messages);
+        this.handleOptions(); // Show back the overview panel
+        return;
+      }
+    }
+  };
 
   handleOptions = () => {
     const message = this.createChatBotMessage(
@@ -72,27 +87,30 @@ class ActionProvider {
       if (docSnap.exists()) {
         const policyData = docSnap.data();
         message = this.createChatBotMessage(`Policy found: ${JSON.stringify(policyData)}`);
-        // Show message to upload image with car registration plate
+
+        localStorage.setItem('policyNumber', policyNumber);
+        localStorage.setItem('policyData', JSON.stringify(policyData));
+
         const uploadImageMessage = this.createChatBotMessage("Please upload an image with the car registration plate:", {
           widget: "imageUpload",
         });
+
         this.addMessageToState(message);
         this.addMessageToState(uploadImageMessage);
       } else {
         message = this.createChatBotMessage("Policy not found. Please try again.");
-        this.addMessageToState(message); // Add "Policy not found" message to state
-        this.handleOptions(); // Show back the overview panel
-        return;
+        this.addMessageToState(message);
+        this.handleOptions();
       }
     } catch (error) {
       message = this.createChatBotMessage(`Error: ${error.message}`);
+      this.addMessageToState(message);
+    } finally {
+      this.setState((prevState) => ({
+        ...prevState,
+        expectingPolicyNumber: false,
+      }));
     }
-
-    // this.addMessageToState(message); // Add the message to state regardless of outcome
-    this.setState((prevState) => ({
-      ...prevState,
-      expectingPolicyNumber: false,
-    }));
   };
 
   addMessageToState = (message) => {
@@ -100,6 +118,10 @@ class ActionProvider {
       ...prevState,
       messages: Array.isArray(message) ? [...prevState.messages, ...message] : [...prevState.messages, message],
     }));
+  };
+
+  getState = () => {
+    return this.state;
   };
 }
 

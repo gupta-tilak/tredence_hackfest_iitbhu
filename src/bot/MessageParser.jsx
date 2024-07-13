@@ -16,8 +16,6 @@ class MessageParser {
         this.actionProvider.handleUpload();
       } else if (lowerCaseMessage.includes("open claim")) {
         this.actionProvider.handleOpenClaim();
-      } else {
-        this.actionProvider.handleOptions();
       }
     }
   }
