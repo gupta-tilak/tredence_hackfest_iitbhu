@@ -32,7 +32,8 @@ const config = {
     },
     {
       widgetName: "image",
-      widgetFunc: (props) => <ImageWidget {...props} />,
+      widgetFunc: (props) => <ImageWidget {...props}/>,
+      mapStateToProps: ["payload"],
     },
   ],
 };

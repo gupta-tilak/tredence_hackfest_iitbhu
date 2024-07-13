@@ -26,7 +26,7 @@ class ActionProvider {
     if (predicted_image) {
       messages.push(this.createChatBotMessage("Predicted Image:", {
         widget: "image",
-        image: predicted_image,
+        payload: {predicted_image},
       }));
     }
 
@@ -72,6 +72,12 @@ class ActionProvider {
       if (docSnap.exists()) {
         const policyData = docSnap.data();
         message = this.createChatBotMessage(`Policy found: ${JSON.stringify(policyData)}`);
+        // Show message to upload image with car registration plate
+        const uploadImageMessage = this.createChatBotMessage("Please upload an image with the car registration plate:", {
+          widget: "imageUpload",
+        });
+        this.addMessageToState(message);
+        this.addMessageToState(uploadImageMessage);
       } else {
         message = this.createChatBotMessage("Policy not found. Please try again.");
         this.addMessageToState(message); // Add "Policy not found" message to state
@@ -82,7 +88,7 @@ class ActionProvider {
       message = this.createChatBotMessage(`Error: ${error.message}`);
     }
 
-    this.addMessageToState(message); // Add the message to state regardless of outcome
+    // this.addMessageToState(message); // Add the message to state regardless of outcome
     this.setState((prevState) => ({
       ...prevState,
       expectingPolicyNumber: false,
