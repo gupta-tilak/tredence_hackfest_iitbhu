@@ -1,6 +1,4 @@
-// ActionProvider.jsx
-
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from '../firebaseConfig';
 
 class ActionProvider {
@@ -56,26 +54,29 @@ class ActionProvider {
     }
   };
 
-  handleDamageResponse = (data) => {
-    const { img1, img2, img3, parts_list_damages } = data;
-    console.log(img1)
+
+  handleDamageResponse = async (data) => {
+    if (!data) {
+      console.error("Data is undefined or null.");
+      return;
+    }
   
+    const { img1, img2, img3, parts_list_damages } = data || {};
+
     // Prepare messages
     const messages = [];
-  
+
     // Display images
-    // messages.push(this.createChatBotMessage("Damage Assessment Results:"));
     messages.push(this.createChatBotMessage("Image 1:", {
       widget: "damageImage",
-      payload: {img1},
+      payload: { img1 },
     }));
-  
+
     // Display parts list damages
     parts_list_damages.forEach((damage, index) => {
       messages.push(this.createChatBotMessage(`Damage ${index + 1}: ${damage}`));
     });
-  
-    // Add messages to state
+
     this.addMessageToState(messages);
   };
   
